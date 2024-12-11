@@ -70,7 +70,6 @@ jobs:
           fi
       - name: 📤 Upload fingerprint
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: fingerprint-${{ matrix.os }}
           path: fingerprint-${{ matrix.os }}.json
