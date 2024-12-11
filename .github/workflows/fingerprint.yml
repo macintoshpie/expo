@@ -69,7 +69,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: fingerprint-${{ matrix-os }}
+          name: fingerprint-${{ matrix.os }}
           path: fingerprint-${{ matrix.os }}.json
 
   cross-platform-checks:
