@@ -53,7 +53,10 @@ jobs:
         if: steps.expo-caches.outputs.yarn-workspace-hit != 'true'
         run: yarn install --frozen-lockfile
       - name: E2E Test @expo/fingerprint
-        run: bun test:e2e --ci --runInBand
+        run: |
+          bun run tsc
+          bun run tsc --build cli
+          bun run jest --config e2e/jest.config.js --ci --runInBand
         working-directory: packages/@expo/fingerprint
       - name: 💾 Create fingerprint from temp project
         run: |
