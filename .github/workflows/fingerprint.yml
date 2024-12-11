@@ -64,9 +64,9 @@ jobs:
           bunx create-expo-app -t blank@sdk-52 sdk52
           cd sdk52
           if [[ "${{ env.ACTIONS_STEP_DEBUG }}" == "true" ]]; then
-            ../expo/packages/@expo/fingerprint/bin/cli.js fingerprint:generate --debug > fingerprint-${{ matrix.os }}.json
+            ../expo/packages/@expo/fingerprint/bin/cli.js fingerprint:generate --debug > ../expo/fingerprint-${{ matrix.os }}.json
           else
-            ../expo/packages/@expo/fingerprint/bin/cli.js fingerprint:generate > fingerprint-${{ matrix.os }}.json
+            ../expo/packages/@expo/fingerprint/bin/cli.js fingerprint:generate > ../expo/fingerprint-${{ matrix.os }}.json
           fi
       - name: 📤 Upload fingerprint
         uses: actions/upload-artifact@v4
