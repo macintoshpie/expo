@@ -7,6 +7,7 @@ exports.getCoreAutolinkingSourcesFromExpoIos = exports.getCoreAutolinkingSources
 const spawn_async_1 = __importDefault(require("@expo/spawn-async"));
 const assert_1 = __importDefault(require("assert"));
 const chalk_1 = __importDefault(require("chalk"));
+const node_process_1 = __importDefault(require("node:process"));
 const path_1 = __importDefault(require("path"));
 const resolve_from_1 = __importDefault(require("resolve-from"));
 const SourceSkips_1 = require("./SourceSkips");
@@ -162,12 +163,22 @@ async function parseCoreAutolinkingSourcesAsync({ config, reasons, contentsId, p
 function stripRncoreAutolinkingAbsolutePaths(dependency, root) {
     (0, assert_1.default)(dependency.root);
     const dependencyRoot = dependency.root;
+    const cmakeDepRoot = node_process_1.default.platform === 'win32' ? dependencyRoot.replace(/\\/g, '/') : dependencyRoot;
     dependency.root = (0, Path_1.toPosixPath)(path_1.default.relative(root, dependencyRoot));
     for (const platformData of Object.values(dependency.platforms)) {
         for (const [key, value] of Object.entries(platformData ?? {})) {
-            platformData[key] = value?.startsWith?.(dependencyRoot)
+            let newValue = value;
+            if (node_process_1.default.platform === 'win32' &&
+                ['cmakeListsPath', 'cxxModuleCMakeListsPath'].includes(key)) {
+                // CMake paths on Windows are serving in slashes.
+                newValue = value?.startsWith?.(cmakeDepRoot)
+                    ? (0, Path_1.toPosixPath)(path_1.default.relative(root, value))
+                    : value;
+            }
+            newValue = value?.startsWith?.(dependencyRoot)
                 ? (0, Path_1.toPosixPath)(path_1.default.relative(root, value))
                 : value;
+            platformData[key] = newValue;
         }
     }
 }

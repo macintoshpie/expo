@@ -1,6 +1,7 @@
 import spawnAsync from '@expo/spawn-async';
 import assert from 'assert';
 import chalk from 'chalk';
+import process from 'node:process';
 import path from 'path';
 import resolveFrom from 'resolve-from';
 
@@ -197,12 +198,28 @@ async function parseCoreAutolinkingSourcesAsync({
 function stripRncoreAutolinkingAbsolutePaths(dependency: any, root: string): void {
   assert(dependency.root);
   const dependencyRoot = dependency.root;
+  const cmakeDepRoot =
+    process.platform === 'win32' ? dependencyRoot.replace(/\\/g, '/') : dependencyRoot;
+
   dependency.root = toPosixPath(path.relative(root, dependencyRoot));
   for (const platformData of Object.values<any>(dependency.platforms)) {
     for (const [key, value] of Object.entries<any>(platformData ?? {})) {
-      platformData[key] = value?.startsWith?.(dependencyRoot)
+      let newValue = value;
+      if (
+        process.platform === 'win32' &&
+        ['cmakeListsPath', 'cxxModuleCMakeListsPath'].includes(key)
+      ) {
+        // CMake paths on Windows are serving in slashes.
+        newValue = value?.startsWith?.(cmakeDepRoot)
+          ? toPosixPath(path.relative(root, value))
+          : value;
+      }
+
+      newValue = value?.startsWith?.(dependencyRoot)
         ? toPosixPath(path.relative(root, value))
         : value;
+
+      platformData[key] = newValue;
     }
   }
 }
