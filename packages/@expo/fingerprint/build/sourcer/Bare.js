@@ -167,17 +167,20 @@ function stripRncoreAutolinkingAbsolutePaths(dependency, root) {
     dependency.root = (0, Path_1.toPosixPath)(path_1.default.relative(root, dependencyRoot));
     for (const platformData of Object.values(dependency.platforms)) {
         for (const [key, value] of Object.entries(platformData ?? {})) {
-            let newValue = value;
+            let newValue;
             if (node_process_1.default.platform === 'win32' &&
                 ['cmakeListsPath', 'cxxModuleCMakeListsPath'].includes(key)) {
-                // CMake paths on Windows are serving in slashes.
+                // CMake paths on Windows are serving in slashes,
+                // we have to check startsWith with the same slashes.
                 newValue = value?.startsWith?.(cmakeDepRoot)
                     ? (0, Path_1.toPosixPath)(path_1.default.relative(root, value))
                     : value;
             }
-            newValue = value?.startsWith?.(dependencyRoot)
-                ? (0, Path_1.toPosixPath)(path_1.default.relative(root, value))
-                : value;
+            else {
+                newValue = value?.startsWith?.(dependencyRoot)
+                    ? (0, Path_1.toPosixPath)(path_1.default.relative(root, value))
+                    : value;
+            }
             platformData[key] = newValue;
         }
     }
