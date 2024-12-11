@@ -7,6 +7,7 @@ import resolveFrom from 'resolve-from';
 import { SourceSkips } from './SourceSkips';
 import { getFileBasedHashSourceAsync } from './Utils';
 import type { HashSource, NormalizedOptions } from '../Fingerprint.types';
+import { toPosixPath } from '../utils/Path';
 
 const debug = require('debug')('expo:fingerprint:sourcer:Bare');
 
@@ -174,7 +175,7 @@ async function parseCoreAutolinkingSourcesAsync({
   for (const [depName, depData] of Object.entries<any>(config.dependencies)) {
     try {
       stripRncoreAutolinkingAbsolutePaths(depData, root);
-      const filePath = depData.root;
+      const filePath = toPosixPath(depData.root);
       debug(`Adding ${logTag} - ${chalk.dim(filePath)}`);
       results.push({ type: 'dir', filePath, reasons });
 
@@ -196,10 +197,12 @@ async function parseCoreAutolinkingSourcesAsync({
 function stripRncoreAutolinkingAbsolutePaths(dependency: any, root: string): void {
   assert(dependency.root);
   const dependencyRoot = dependency.root;
-  dependency.root = path.relative(root, dependencyRoot);
+  dependency.root = toPosixPath(path.relative(root, dependencyRoot));
   for (const platformData of Object.values<any>(dependency.platforms)) {
     for (const [key, value] of Object.entries<any>(platformData ?? {})) {
-      platformData[key] = value?.startsWith?.(dependencyRoot) ? path.relative(root, value) : value;
+      platformData[key] = value?.startsWith?.(dependencyRoot)
+        ? toPosixPath(path.relative(root, value))
+        : value;
     }
   }
 }

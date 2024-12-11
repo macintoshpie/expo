@@ -20,7 +20,7 @@ import type {
   HashSourceContents,
   NormalizedOptions,
 } from '../Fingerprint.types';
-import { isIgnoredPathWithMatchObjects } from '../utils/Path';
+import { isIgnoredPathWithMatchObjects, toPosixPath } from '../utils/Path';
 import { nonNullish } from '../utils/Predicates';
 import { profile } from '../utils/Profile';
 

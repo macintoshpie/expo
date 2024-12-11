@@ -11,6 +11,7 @@ const path_1 = __importDefault(require("path"));
 const resolve_from_1 = __importDefault(require("resolve-from"));
 const SourceSkips_1 = require("./SourceSkips");
 const Utils_1 = require("./Utils");
+const Path_1 = require("../utils/Path");
 const debug = require('debug')('expo:fingerprint:sourcer:Bare');
 async function getBareAndroidSourcesAsync(projectRoot, options) {
     if (options.platforms.includes('android')) {
@@ -141,7 +142,7 @@ async function parseCoreAutolinkingSourcesAsync({ config, reasons, contentsId, p
     for (const [depName, depData] of Object.entries(config.dependencies)) {
         try {
             stripRncoreAutolinkingAbsolutePaths(depData, root);
-            const filePath = depData.root;
+            const filePath = (0, Path_1.toPosixPath)(depData.root);
             debug(`Adding ${logTag} - ${chalk_1.default.dim(filePath)}`);
             results.push({ type: 'dir', filePath, reasons });
             autolinkingConfig[depName] = depData;
@@ -161,10 +162,12 @@ async function parseCoreAutolinkingSourcesAsync({ config, reasons, contentsId, p
 function stripRncoreAutolinkingAbsolutePaths(dependency, root) {
     (0, assert_1.default)(dependency.root);
     const dependencyRoot = dependency.root;
-    dependency.root = path_1.default.relative(root, dependencyRoot);
+    dependency.root = (0, Path_1.toPosixPath)(path_1.default.relative(root, dependencyRoot));
     for (const platformData of Object.values(dependency.platforms)) {
         for (const [key, value] of Object.entries(platformData ?? {})) {
-            platformData[key] = value?.startsWith?.(dependencyRoot) ? path_1.default.relative(root, value) : value;
+            platformData[key] = value?.startsWith?.(dependencyRoot)
+                ? (0, Path_1.toPosixPath)(path_1.default.relative(root, value))
+                : value;
         }
     }
 }
